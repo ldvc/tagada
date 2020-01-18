@@ -1,9 +1,0 @@
-# transmicleaner config file
-user: transmission
-passwd: superPassword
-
-criteria:
-    min_ratio: 3
-    max_ratio: 10
-    min_days: 60
-    max_days: 80
