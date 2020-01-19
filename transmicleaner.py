@@ -10,12 +10,16 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import argparse
 import logging
+from pathlib import Path
 
 import pendulum
 import transmissionrpc
 import yaml
 
 LOG_FILE = "/tmp/transmicleaner.log"
+SCRIPT_DIR = Path(__file__).parent.absolute()
+CFG_FILE = Path(SCRIPT_DIR / "transmicleaner.yml")
+
 logging.basicConfig(
     format="%(asctime)s :: %(levelname)s :: %(message)s",
     datefmt="%Y-%m-%d %H:%M",
@@ -26,7 +30,7 @@ logging.basicConfig(
 
 def get_config():
     """Parse yaml"""
-    with open("transmicleaner.yml", "r") as ymlfile:
+    with open(CFG_FILE, "r") as ymlfile:
         cfg = yaml.load(ymlfile, Loader=yaml.FullLoader)
 
     return cfg
