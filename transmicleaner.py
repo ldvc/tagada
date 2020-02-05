@@ -44,14 +44,18 @@ def get_torrents():
         "localhost", user=config["user"], password=config["passwd"], rpc="/torrent/rpc"
     )
 
-    timer_60 = pendulum.now("Europe/Paris").subtract(days=60)
-    timer_80 = pendulum.now("Europe/Paris").subtract(days=80)
-    # print(timer_60)
+    days_min = config.get("criteria").get("min_days")
+    days_max = config.get("criteria").get("max_days")
+    ratio_min = config.get("criteria").get("min_ratio")
+
+    timer_min = pendulum.now("Europe/Paris").subtract(days=days_min)
+    timer_max = pendulum.now("Europe/Paris").subtract(days=days_max)
+    # print(timer_min)
 
     torrents = tc.get_torrents()
     for torrent in torrents:
         done = str(torrent.date_done)
-        if pendulum.parse(done) < timer_60 and torrent.ratio > 3:
+        if pendulum.parse(done) < timer_min and torrent.ratio > ratio_min:
             t_name = torrent.name.encode("utf-8")
             print("*" * 5, t_name, "(%s)" % done)
             if args.prune:
@@ -62,10 +66,11 @@ def get_torrents():
                     torrent.ratio,
                 )
                 tc.remove_torrent(torrent.hashString, delete_data=True)
-        elif pendulum.parse(done) < timer_80 and torrent.ratio < 3:
+        elif pendulum.parse(done) < timer_max and torrent.ratio < ratio_min:
             if args.prune:
                 logging.info(
-                    "Ratio faible, mais 80+ jours. On supprime %s ### {'date':%s, 'ratio':%s}",
+                    "Ratio faible, mais %d+ jours. On supprime %s ### {'date':%s, 'ratio':%s}",
+                    days_max,
                     torrent.name,
                     done,
                     torrent.ratio,
