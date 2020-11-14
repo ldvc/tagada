@@ -54,7 +54,7 @@ def get_torrents():
 
     torrents = tc.get_torrents()
     for torrent in torrents:
-        done = str(torrent.date_done)
+        done = str(torrent.date_added)
         if pendulum.parse(done) < timer_min and torrent.ratio > ratio_min:
             t_name = torrent.name.encode("utf-8")
             print("*" * 5, t_name, "(%s)" % done)
