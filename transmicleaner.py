@@ -11,9 +11,10 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import argparse
 import logging
 from pathlib import Path
+import urllib.request
 
 import pendulum
-import transmissionrpc
+import transmission_rpc
 import yaml
 
 LOG_FILE = "/tmp/transmicleaner.log"
@@ -40,8 +41,11 @@ def get_torrents():
     """Retrieve torrents in transmission"""
 
     config = get_config()
-    tc = transmissionrpc.Client(
-        "localhost", user=config["user"], password=config["passwd"], rpc="/torrent/rpc"
+    tc = transmission_rpc.Client(
+        host="localhost",
+        username=config["user"],
+        password=config["passwd"],
+        path="/torrent/rpc",
     )
 
     days_min = config.get("criteria").get("min_days")
@@ -54,10 +58,10 @@ def get_torrents():
 
     torrents = tc.get_torrents()
     for torrent in torrents:
-        done = str(torrent.date_done)
+        done = str(torrent.added_date)
         if pendulum.parse(done) < timer_min and torrent.ratio > ratio_min:
-            t_name = torrent.name.encode("utf-8")
-            print("*" * 5, t_name, "(%s)" % done)
+            t_name = torrent.name  # .encode("utf-8")
+            # print("*" * 5, t_name, "(%s)" % done)
             if args.prune:
                 logging.info(
                     "On supprime %s ### {'date':%s, 'ratio':%s}",
@@ -85,4 +89,10 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    get_torrents()
+    try:
+        get_torrents()
+        # FIXME refactor in order not to call get_config twice
+        config = get_config()
+        urllib.request.urlopen(config["hc_url"])
+    except:
+        raise
