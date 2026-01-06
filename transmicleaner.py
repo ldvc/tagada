@@ -58,6 +58,14 @@ def get_torrents():
 
     torrents = tc.get_torrents()
     for torrent in torrents:
+        # Skip private tracker torrents to maintain good score
+        if torrent.trackers and "generation-free.org/announce" in torrent.trackers[0].announce:
+            logging.info(
+                "Tracker privé, on ne touche pas au torrent %s",
+                torrent.name,
+            )
+            continue
+
         done = str(torrent.added_date)
         if pendulum.parse(done) < timer_min and torrent.ratio > ratio_min:
             t_name = torrent.name  # .encode("utf-8")
